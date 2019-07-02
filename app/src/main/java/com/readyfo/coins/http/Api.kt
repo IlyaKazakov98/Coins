@@ -1,6 +1,7 @@
 package com.readyfo.coins.http
 
 import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,9 +16,11 @@ object Api {
     lateinit var coinsApi: CoinsService
 
     fun init(){
+        // Для логирования ответа с сервера
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
+        // Для указания типа возвращаемого ответа и apiKey
         val interceptor = Interceptor {
             val request = it.request().newBuilder()
                 .header("Accept", "application/json")
@@ -42,6 +45,7 @@ object Api {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(gsonConverterFactory)
             .build()
 

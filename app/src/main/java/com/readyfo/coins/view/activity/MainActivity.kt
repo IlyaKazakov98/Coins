@@ -3,14 +3,18 @@ package com.readyfo.coins.view.activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.paginate.Paginate
 import com.readyfo.coins.R
-import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.adapter.CoinsAdapter
 import com.readyfo.coins.view.fragment.PreviewFragment
 import com.readyfo.coins.viewmodel.CoinsViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Paginate.Callbacks {
 
     private lateinit var coinsViewModel: CoinsViewModel
     private var previewTrue = false
@@ -18,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        coinRecyclerView.layoutManager = LinearLayoutManager(this)
 
         // Запускаем фрагмент превью на 2 секунд, после удаляем
         if (!previewTrue) {
@@ -30,15 +35,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Создаём Адаптер и привязываем его к RecyclerView
+        val adapter = CoinsAdapter(this)
+        coinRecyclerView.layoutManager = LinearLayoutManager(this)
+        coinRecyclerView.adapter = adapter
+
         coinsViewModel = ViewModelProviders.of(this).get(CoinsViewModel::class.java)
+        // Инициализируем загрузку данных в LiveData
         coinsViewModel.init()
-        coinsViewModel.getCoins().observe(this, Observer<List<CoinsModel>>{
-            refreshUI(it)
+        // Подписываемся на изменение данных
+        coinsViewModel.getCoins().observe(this, Observer{
+            // Обновляем UI(передаём PagedList в адаптер)
+            adapter.submitList(it)
         })
+
+        swipeToRefresh.setOnRefreshListener {
+            Log.d("CoinsLogSwipe", "Обновленно")
+            // coinsViewModel.init()
+        }
     }
 
-    fun refreshUI(coins: List<CoinsModel>){
+    override fun onLoadMore() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
+    override fun isLoading(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun hasLoadedAllItems(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     // Добавление фрагмента

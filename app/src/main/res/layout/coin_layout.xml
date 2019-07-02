@@ -31,7 +31,7 @@
                     android:layout_marginStart="4dp">
 
                 <LinearLayout
-                        android:id="@+id/nameContainer"
+                        android:id="@+id/nameBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -40,7 +40,7 @@
                         app:layout_constraintStart_toStartOf="parent">
 
                     <TextView
-                            android:id="@+id/symbolCoin"
+                            android:id="@+id/coinSymbol"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="BTC"
@@ -54,10 +54,10 @@
                             android:layout_marginStart="8dp"/>
 
                     <TextView
-                            android:id="@+id/nameCoin"
+                            android:id="@+id/coinName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bitcoin"
+                            android:text="Basic Attention Token"
                             android:textSize="15sp"
                             android:layout_marginStart="8dp"
                     />
@@ -65,7 +65,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                        android:id="@+id/priceContainer"
+                        android:id="@+id/priceBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -81,7 +81,7 @@
                             android:layout_marginEnd="8dp"/>
 
                     <TextView
-                            android:id="@+id/priceCoinUSD"
+                            android:id="@+id/priceUSD"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="10,000"
@@ -91,7 +91,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                        android:id="@+id/oneHourChangeContainer"
+                        android:id="@+id/oneHourChangeBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
