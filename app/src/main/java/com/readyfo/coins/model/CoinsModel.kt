@@ -12,17 +12,15 @@ data class Response(
 // Модель для сохранения в бд
 @Entity (tableName = "coins_table")
 data class CoinsModel(
-    @PrimaryKey
-    val id: Int,
     val symbol: String,
     val name: String,
     @Embedded
     val quote: Quote
 )
-//{
-//    @PrimaryKey(autoGenerate = true)
-//    var id: Int = 0
-//}
+{
+    @PrimaryKey(autoGenerate = true)
+    var localId: Int = 0
+}
 
 data class Quote(
     @Embedded

@@ -1,4 +1,4 @@
-package com.readyfo.coins.util.pagingutil
+package com.readyfo.coins.paging.util
 
 //class PositionalCoinsSource: PositionalDataSource<CoinsModel>() {
 //    private val computeCount = 30

@@ -14,7 +14,7 @@ import com.readyfo.coins.view.fragment.PreviewFragment
 import com.readyfo.coins.viewmodel.CoinsViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), Paginate.Callbacks {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var coinsViewModel: CoinsViewModel
     private var previewTrue = false
@@ -53,18 +53,6 @@ class MainActivity : AppCompatActivity(), Paginate.Callbacks {
             Log.d("CoinsLogSwipe", "Обновленно")
             // coinsViewModel.init()
         }
-    }
-
-    override fun onLoadMore() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun isLoading(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun hasLoadedAllItems(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     // Добавление фрагмента

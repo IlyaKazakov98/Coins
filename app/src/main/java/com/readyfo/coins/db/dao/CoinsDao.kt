@@ -20,11 +20,11 @@ interface CoinsDao {
     @Query("DELETE FROM coins_table")
     suspend fun deleteAll()
 
-    @Query("SELECT * from coins_table")
-    fun logLoadInitialCoins(): List<CoinsModel>
+    @Query("SELECT * from coins_table WHERE localId = 1")
+    fun logLoadInitialCoins(): CoinsModel
 
-    @Query("SELECT * from coins_table WHERE id = 1")
-    fun logLoadInitialCoin(): CoinsModel
+    // @Query("SELECT * from coins_table WHERE localId = 1")
+    // fun logLoadInitialCoin(): CoinsModel
 
     @Query("SELECT * from coins_table WHERE symbol = :eth")
     fun logLoadETH(eth: String): CoinsModel

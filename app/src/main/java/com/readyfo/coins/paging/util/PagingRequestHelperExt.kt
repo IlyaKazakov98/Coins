@@ -1,9 +1,6 @@
-package com.readyfo.coins.util
+package com.readyfo.coins.paging.util
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingRequestHelper
-import androidx.work.impl.constraints.NetworkState
 
 private fun getErrorMessage(report: PagingRequestHelper.StatusReport): String {
     return PagingRequestHelper.RequestType.values().mapNotNull {

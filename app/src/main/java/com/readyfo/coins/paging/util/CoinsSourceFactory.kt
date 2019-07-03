@@ -1,4 +1,4 @@
-package com.readyfo.coins.util.pagingutil
+package com.readyfo.coins.paging.util
 
 
 //open class CoinsSourceFactory: DataSource.Factory<Int, CoinsModel>() {

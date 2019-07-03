@@ -27,7 +27,7 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
 
     companion object{
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CoinsModel>(){
-            override fun areItemsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem.id == newItem.id
+            override fun areItemsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem.localId == newItem.localId
 
             override fun areContentsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem == newItem
         }
