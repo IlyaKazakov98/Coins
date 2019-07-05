@@ -3,6 +3,7 @@ package com.readyfo.coins.model
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 // Модель ответа с сервера
 data class Response(
@@ -12,23 +13,23 @@ data class Response(
 // Модель для сохранения в бд
 @Entity (tableName = "coins_table")
 data class CoinsModel(
-    val symbol: String,
-    val name: String,
+    @PrimaryKey
+    @SerializedName("cmc_rank")
+    val localId: Int?,
+    val id: Int?,
+    val symbol: String?,
+    val name: String?,
     @Embedded
-    val quote: Quote
+    val quote: Quote?
 )
-{
-    @PrimaryKey(autoGenerate = true)
-    var localId: Int = 0
-}
 
 data class Quote(
     @Embedded
-    val USD: USD
+    val USD: USD?
 )
 
 data class USD(
-    val last_updated: String,
-    val percent_change_1h: Double,
-    val price: Double
+    val last_updated: String?,
+    val percent_change_1h: Double?,
+    val price: Double?
 )

@@ -52,7 +52,7 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
             // set the text
             coinSymbol.text = coins?.symbol
             coinName.text = coins?.name
-            coinPrice.text = "${String.format("%.6g%n", coins?.quote?.USD?.price)}"
+            coinPrice.text = String.format("%.6g%n", coins?.quote?.USD?.price)
             oneHourChange.text = "${coins?.quote?.USD?.percent_change_1h} %"
 
             Picasso.get()

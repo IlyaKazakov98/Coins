@@ -12,9 +12,19 @@ class CoinsViewModel: ViewModel() {
 
     fun init(){
         // Инициализируем LiveData и запрашиваем PagedList у Репозитория
-        coinLiveData = CoinsRepository.pagedListBuilder()
+        coinLiveData = CoinsRepository.initLiveData()
     }
 
     // Функция для запроса coinLiveData на обновленеие данных в Activity/Fragment
     fun getCoins() = coinLiveData
+
+    // Функция обновления
+    fun updateCoins(): LiveData<PagedList<CoinsModel>> = CoinsRepository.updateCoins()
+
+    // Функция поиска по имени
+    fun searchBy(newText: String) = CoinsRepository.searchBy(newText)
+
+    // Функция сортировки
+    fun sortBy(value: String) = CoinsRepository.sortBy(value)
+
 }
