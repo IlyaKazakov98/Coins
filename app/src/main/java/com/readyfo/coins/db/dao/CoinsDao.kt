@@ -18,7 +18,7 @@ interface CoinsDao {
     @Query("SELECT * from coins_table")
     fun loadInitialCoins(): DataSource.Factory<Int, CoinsModel>
 
-    @Query("SELECT name FROM coins_table WHERE name LIKE :newText")
+    @Query("SELECT * FROM coins_table WHERE name LIKE :newText || '%'")
     fun searchBy(newText: String): DataSource.Factory<Int, CoinsModel>
 
     @Query("SELECT * FROM coins_table ORDER BY :value ASC")

@@ -34,14 +34,13 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
     }
 
     inner class CoinsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // look up the view
+
         private var coinsIcon = itemView.coinIcon
         private var coinSymbol = itemView.coinSymbol
         private var coinName = itemView.coinName
         private var coinPrice = itemView.priceUSD
         private var oneHourChange = itemView.oneHourChange
 
-        // Create data
         private var coinsModel: CoinsModel? = null
 
         /**

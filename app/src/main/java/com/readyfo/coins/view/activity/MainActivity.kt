@@ -3,7 +3,6 @@ package com.readyfo.coins.view.activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.provider.SyncStateContract.Helpers.update
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -13,7 +12,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.readyfo.coins.R
 import com.readyfo.coins.adapter.CoinsAdapter
-import com.readyfo.coins.model.CoinsModel
 import com.readyfo.coins.view.fragment.PreviewFragment
 import com.readyfo.coins.viewmodel.CoinsViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -91,11 +89,12 @@ class MainActivity : AppCompatActivity() {
                 if (query != null && query.isNotEmpty()){
 
                     //
-                    val resultSearch = coinsViewModel.searchBy("$query%").value
-                    Log.d("CoinsLog", "Search2: $resultSearch")
+                    val resultSearch = coinsViewModel.searchBy(query).value
+                    Log.d("CoinsLog", "Search1: $resultSearch")
                     adapter.submitList(resultSearch)
                 }
                 else{}
+                Log.d("CoinsLog", "onQueryTextSubmit1: $query")
                 return false
             }
 
@@ -103,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                 if (newText != null && newText.isNotEmpty()){
 
                     //
-                    val resultSearch = coinsViewModel.searchBy("$newText%").value
+                    val resultSearch = coinsViewModel.searchBy(newText).value
                     Log.d("CoinsLog", "Search2: $resultSearch")
                     adapter.submitList(resultSearch)
                 }

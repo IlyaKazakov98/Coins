@@ -119,7 +119,7 @@ object CoinsRepository {
                     }
                 }
             } catch (e: Exception) {
-                Log.d("CoinsLog", "ThrowableRefreshData: ${e.message}")
+                Log.e("CoinsErrorLog", "ThrowableRefreshData: ${e.message}")
                 // Snackbar.make(this, "Данные не обновленны, проверте подключение к интернету,", Snackbar.LENGTH_LONG)
             }
         }
