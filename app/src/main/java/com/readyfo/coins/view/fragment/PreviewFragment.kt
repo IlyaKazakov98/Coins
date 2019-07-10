@@ -16,6 +16,7 @@ class PreviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        retainInstance = true
         return inflater.inflate(R.layout.fragment_preview, container, false)
     }
 

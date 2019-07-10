@@ -2,19 +2,20 @@ package com.readyfo.coins.adapter
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.readyfo.coins.Common
 import com.readyfo.coins.R
 import com.readyfo.coins.model.CoinsModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.coin_layout.view.*
-
-
-private var imageUrl = "https://res.cloudinary.com/dxi90ksom/image/upload/"
 
 class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, CoinsAdapter.CoinsViewHolder>(DIFF_CALLBACK) {
     override fun onBindViewHolder(holder: CoinsViewHolder, position: Int) =
@@ -35,7 +36,9 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
 
     inner class CoinsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+        private val parentLayout = itemView.parentLayout
         private var coinsIcon = itemView.coinIcon
+        private var favoritesIcon = itemView.favoritesIcon
         private var coinSymbol = itemView.coinSymbol
         private var coinName = itemView.coinName
         private var coinPrice = itemView.priceUSD
@@ -46,27 +49,50 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
         /**
          * Bind data
          */
-        fun bindTo(coins: CoinsModel?) {
-            this.coinsModel = coins
-            // set the text
-            coinSymbol.text = coins?.symbol
-            coinName.text = coins?.name
-            coinPrice.text = String.format("%.6g%n", coins?.quote?.USD?.price)
-            oneHourChange.text = "${coins?.quote?.USD?.percent_change_1h} %"
+        fun bindTo(coinsModel: CoinsModel?) {
+            this.coinsModel = coinsModel
+
+            // Обрабатываем нажатия на элемент RecyclerView и передаём данные о нём, по цепочке, в ViewPager
+            parentLayout.setOnClickListener{
+                Log.d("CoinsLog", "ModelInAdapter: $coinsModel")
+
+                if (coinsModel != null) {
+                    val listener = context as ItemClickListener
+                    listener.onClickItem(coinsModel)
+                }
+            }
+
+            // Записываем данные в coin_layout
+            coinSymbol.text = coinsModel?.symbol
+            coinName.text = coinsModel?.name
+            coinPrice.text = String.format("%.6g%n", coinsModel?.quote?.USD?.price)
+            oneHourChange.text = "${coinsModel?.quote?.USD?.percent_change_1h} %"
+            favoritesIcon.setImageResource(
+                if (coinsModel?.favorites == 0){
+                    R.drawable.ic_favorites_false_24dp
+                } else{
+                    R.drawable.ic_favorites_true_24dp
+                }
+            )
+
 
             Picasso.get()
-                .load(StringBuilder(imageUrl)
-                    .append(coins?.symbol?.toLowerCase())
+                .load(StringBuilder(Common.imageUrl)
+                    .append(coinsModel?.symbol?.toLowerCase())
                     .append(".png")
                     .toString())
                 .into(coinsIcon)
 
             oneHourChange.setTextColor(
-                if ("${coins?.quote?.USD?.percent_change_1h}".contains("-"))
+                if ("${coinsModel?.quote?.USD?.percent_change_1h}".contains("-"))
                     Color.parseColor("#d94040")
                 else Color.parseColor("#009e73")
             )
         }
     }
-}
 
+    interface ItemClickListener {
+        fun onClickItem(coinsModel: CoinsModel)
+    }
+
+}

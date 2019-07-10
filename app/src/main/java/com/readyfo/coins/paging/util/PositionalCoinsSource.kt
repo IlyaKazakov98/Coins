@@ -15,10 +15,10 @@ package com.readyfo.coins.paging.util
 //            val totalCount = computeCount
 //            val position = computeInitialLoadPosition(params, totalCount)
 //            val loadSize = computeInitialLoadSize(params, position, totalCount)
-//            callback.onResult(loadInitialCoins(params.requestedStartPosition, params.requestedLoadSize), position, loadSize)
+//            callback.onResult(getCoins(params.requestedStartPosition, params.requestedLoadSize), position, loadSize)
 //        }
 //    }
 //
-//    private suspend fun loadInitialCoins(requestedStartPosition: Int, requestedLoadSize: Int) = CoinsRepository.loadInitialCoins(requestedStartPosition, requestedLoadSize)
-    //private suspend fun load (requestedStartPosition: Int, requestedLoadSize: Int) = CoinsRepository.loadInitialCoins(requestedStartPosition, requestedLoadSize)
+//    private suspend fun getCoins(requestedStartPosition: Int, requestedLoadSize: Int) = CoinsRepository.getCoins(requestedStartPosition, requestedLoadSize)
+    //private suspend fun load (requestedStartPosition: Int, requestedLoadSize: Int) = CoinsRepository.getCoins(requestedStartPosition, requestedLoadSize)
 //}

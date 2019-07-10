@@ -1,8 +1,6 @@
 package com.readyfo.coins.model
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.google.gson.annotations.SerializedName
 
 // Модель ответа с сервера
@@ -16,12 +14,14 @@ data class CoinsModel(
     @PrimaryKey
     @SerializedName("cmc_rank")
     val localId: Int?,
-    val id: Int?,
     val symbol: String?,
     val name: String?,
     @Embedded
     val quote: Quote?
 )
+{
+    var favorites: Int = 0
+}
 
 data class Quote(
     @Embedded
@@ -29,7 +29,19 @@ data class Quote(
 )
 
 data class USD(
-    val last_updated: String?,
+    val price: Double?,
+    val volume_24h: Double?,
     val percent_change_1h: Double?,
-    val price: Double?
+    val percent_change_24h: Double?,
+    val percent_change_7d: Double?,
+    val market_cap: Double?,
+    val last_updated: String?
 )
+
+// Entity(tableName = "favorites_table")
+// ata class FavoritesModel(
+//    @PrimaryKey
+//    val id: Int?,
+//    val favorites_symbol: String?,
+//    val favorites_id: Int?
+// )

@@ -6,9 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.readyfo.coins.db.dao.CoinsDao
 import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.model.GlobalMetricsModel
 
 @Database(
-    entities = [CoinsModel::class],
+    entities = [CoinsModel::class, GlobalMetricsModel::class],
     exportSchema = false,
     version = 1
 )

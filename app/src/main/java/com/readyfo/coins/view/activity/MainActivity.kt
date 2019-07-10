@@ -4,30 +4,33 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.SearchView
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
 import com.readyfo.coins.R
 import com.readyfo.coins.adapter.CoinsAdapter
+import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.model.GlobalMetricsModel
+import com.readyfo.coins.model.GlobalMetricsQuote
+import com.readyfo.coins.model.GlobalMetricsUSD
+import com.readyfo.coins.view.fragment.MainFragment
 import com.readyfo.coins.view.fragment.PreviewFragment
+import com.readyfo.coins.view.fragment.viewpagerfragmens.ViewPagerFragment
 import com.readyfo.coins.viewmodel.CoinsViewModel
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.readyfo.coins.workmanager.UpLoadWorker
+import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var coinsViewModel: CoinsViewModel
+class MainActivity : AppCompatActivity(), CoinsAdapter.ItemClickListener {
+    private var coinsViewModel: CoinsViewModel? = null
+    private val workManager: WorkManager = WorkManager.getInstance()
+    private val stub = GlobalMetricsModel(btc_dominance = 63.3, eth_dominance = 9.6, active_cryptocurrencies = 2322, active_market_pairs = 19121, active_exchanges = 0, quote = GlobalMetricsQuote(
+        GlobalMetricsUSD(total_market_cap = 351790429658.0, total_volume_24h = 78129053277.0)
+    ))
     private var previewTrue = false
-    private val adapter = CoinsAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        coinRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        workManager.enqueueUniquePeriodicWork("network_update", ExistingPeriodicWorkPolicy.KEEP, applyFonWork())
 
         // Запускаем фрагмент превью на 2 секунд, после удаляем
         if (!previewTrue) {
@@ -35,93 +38,33 @@ class MainActivity : AppCompatActivity() {
                 val handler = Handler()
                 addFragment(PreviewFragment(), "preview")
                 previewTrue = true
-                handler.postDelayed({removeFragment("preview")
+                handler.postDelayed({
+                    removeFragment("preview")
+                    addFragment(MainFragment(this), "main")
                 }, 2000)
             }
         }
-
-        // Создаём Адаптер и привязываем его к RecyclerView
-        coinRecyclerView.layoutManager = LinearLayoutManager(this)
-        coinRecyclerView.adapter = adapter
-
-        coinsViewModel = ViewModelProviders.of(this).get(CoinsViewModel::class.java)
-        // Инициализируем загрузку данных в LiveData
-        coinsViewModel.init()
-        // Подписываемся на изменение данных
-        coinsViewModel.getCoins().observe(this, Observer{
-            // Обновляем UI(передаём PagedList в адаптер)
-            adapter.submitList(it)
-        })
-
-        swipeToRefresh.setOnRefreshListener {
-            update()
-        }
     }
 
-    // Привязываем меню к нашей активности
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        initSearchView(menu)
-        return true
+    // По нажатию на элемент RecyclerView передаюм данные во фрагмент, для ViewPaged
+    override fun onClickItem(coinsModel: CoinsModel) {
+        val localGM =
+            if (coinsViewModel?.getGlobalMetrics()?.value != null)
+                coinsViewModel?.getGlobalMetrics()?.value
+        else stub
+        Log.d("CoinsLog", "ModelInActivity: $coinsModel")
+        replaceFragment(ViewPagerFragment(this, coinsModel, localGM), "viewPager")
     }
 
-    // Обрабатываем нажатия на пункты меню сортировки и передаём в качестве параметра имя столбца по которому будем сортировать
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when(item?.itemId){
-            R.id.menuSortByPrice -> sortBy("price")
-            R.id.menuSortByPercent -> sortBy("percent_change_1h")
-        }
-        return super.onOptionsItemSelected(item)
-    }
+    // Строится запрос на фоновое обновления данных(раз в час)
+    private fun applyFonWork(): PeriodicWorkRequest {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
 
-    // Получаем отсортированный PagedList и передаём его адаптеру
-    private fun sortBy(value: String){
-        val resultSort = coinsViewModel.sortBy(value).value
-        adapter.submitList(resultSort)
-    }
-
-    //
-    private fun initSearchView(menu: Menu) {
-        val searchViewMenuItem = menu.findItem(R.id.app_bar_search)
-        val searchView = searchViewMenuItem.actionView as SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null && query.isNotEmpty()){
-
-                    //
-                    val resultSearch = coinsViewModel.searchBy(query).value
-                    Log.d("CoinsLog", "Search1: $resultSearch")
-                    adapter.submitList(resultSearch)
-                }
-                else{}
-                Log.d("CoinsLog", "onQueryTextSubmit1: $query")
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null && newText.isNotEmpty()){
-
-                    //
-                    val resultSearch = coinsViewModel.searchBy(newText).value
-                    Log.d("CoinsLog", "Search2: $resultSearch")
-                    adapter.submitList(resultSearch)
-                }
-                else{}
-                Log.d("CoinsLog", "onQueryTextSubmit2: $newText")
-                return false
-            }
-
-        })
-    }
-
-    // Обновляем данные по просьбе пользователя
-    private fun update(){
-        swipeToRefresh.isRefreshing = true
-        Log.d("CoinsLog", "Swipe: Обновленно")
-        GlobalScope.launch {
-            coinsViewModel.updateCoins()
-        }
-        swipeToRefresh.isRefreshing = false
+        return PeriodicWorkRequest.Builder(UpLoadWorker::class.java, 60, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
     }
 
     // Добавление фрагмента
@@ -129,9 +72,16 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager
             .beginTransaction()
             .add(R.id.mainContainer, fragment, tag)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
+    private fun replaceFragment(fragment: androidx.fragment.app.Fragment, tag: String){
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.mainContainer, fragment, tag)
+            .addToBackStack(null)
+            .commitAllowingStateLoss()
+    }
     // Удаление фрагмента
     private fun removeFragment(tagFragment: String) {
         val fragment = supportFragmentManager.findFragmentByTag(tagFragment)
