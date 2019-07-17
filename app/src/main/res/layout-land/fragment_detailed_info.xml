@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools" android:id="@+id/fragTabs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".view.fragment.viewpagerfragmens.DetailedInfoFragment">
+
+    <ImageView
+            android:id="@+id/tabCoinIcon"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            app:srcCompat="@mipmap/ic_launcher"
+            android:layout_margin="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tabCoinIcon"
+            app:layout_constraintStart_toEndOf="@+id/tabCoinIcon" android:layout_marginStart="8dp">
+
+        <LinearLayout
+                android:id="@+id/tabNameBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="start"
+                android:layout_margin="8dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="8dp">
+
+            <TextView
+                    android:id="@+id/tabCoinSymbol"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BTC"
+                    android:textSize="@dimen/big_text_size"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="|"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginStart="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabCoinName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bitcoin"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    android:layout_marginStart="8dp"
+            />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabPriceBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabPriceUSD"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10,000"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabOneHourChangeBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="8dp"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/tabPriceBox"
+                android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent">
+
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1h:"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabOneHourChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+            android:id="@+id/tabDetailInfo"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/tabCoinIcon">
+
+        <LinearLayout
+                android:id="@+id/tabVolumeTwentyFourHourChangeBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Volume (24h)"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabVolumeTwentyFourHourChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabPercentTwentyFourHourChangeBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="24h:"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabPercentTwentyFourHourChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabPercentSevenDaysChangeBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7d:"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabPercentSevenDaysChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabMarketCapBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Market Cap"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabMarketCap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/tabLastUpDatedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Last updated"
+                    android:textSize="@dimen/big_text_size"
+                    android:layout_marginEnd="8dp"/>
+
+            <TextView
+                    android:id="@+id/tabLastUpDated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/big_text_size"
+                    android:lines="1"
+                    android:ellipsize="end"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

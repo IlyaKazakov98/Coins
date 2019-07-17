@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      tools:context=".view.fragment.MainFragment">
+
+    <item
+            android:id="@+id/app_bar_search"
+            android:title="@string/search"
+            android:icon="@drawable/ic_search_black_24dp"
+            app:showAsAction="ifRoom"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"/>
+    <item
+            android:id="@+id/app_bar_sort"
+            android:title="@string/sort_by"
+            android:icon="@drawable/ic_sort_black_24dp"
+            app:showAsAction="always">
+
+        <menu>
+            <item
+                    android:id="@+id/menuSortByPrice"
+                    android:title="Сортировать по цене (по убыванию)"
+                />
+            <item
+                    android:id="@+id/menuSortByPercent"
+                    android:title="Сортировать по проценту (по убыванию)"
+            />
+        </menu>
+    </item>
+</menu>

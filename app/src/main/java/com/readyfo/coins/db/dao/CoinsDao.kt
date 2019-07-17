@@ -35,19 +35,26 @@ abstract class CoinsDao {
     @Update
     abstract suspend fun updateGM(globalMetricsModel: GlobalMetricsModel)
 
-    @Query("UPDATE coins_table SET favorites = :value WHERE symbol = :position ")
-    abstract suspend fun setFavorites(position: String, value: Int)
+    @Query("UPDATE coins_table SET favorites = :value WHERE symbol = :symbolCoin" )
+    abstract suspend fun setFavorites(symbolCoin: String, value: Int)
+
+//    @Query("UPDATE favorites_table SET favorites_id = :value WHERE favorites_symbol = :symbolCoin" )
+//    abstract suspend fun setFavorites(symbolCoin: String, value: Int)
 
     // Проверка на наличие данных
-    @Query("SELECT * from coins_table  ORDER BY localId DESC LIMIT 1")
+    @Query("SELECT * from coins_table  ORDER BY local_id DESC LIMIT 1")
     abstract fun lastInsertRowid(): CoinsModel
 
     @Query("SELECT id from global_metrics_table  ORDER BY id ASC LIMIT 1")
     abstract fun dataAvailabilityCheckDB(): Int
 
     // Запрос на получение данных для DataSource
-    @Query("SELECT * from coins_table ORDER BY favorites DESC, localId ASC")
+
+    @Query("SELECT * from coins_table ORDER BY favorites DESC, local_id ASC")
     abstract fun getCoins(): DataSource.Factory<Int, CoinsModel>
+
+//    @Query("SELECT * from coins_table ORDER BY (SELECT favorites_table.favorites_id FROM favorites_table INNER JOIN coins_table ON coins_table.symbol = favorites_symbol)  DESC, local_id ASC")
+//    abstract fun getCoins(): DataSource.Factory<Int, CoinsModel>
 
     @Query("SELECT * from global_metrics_table")
     abstract fun getGlobalMetrics(): LiveData<GlobalMetricsModel>

@@ -49,7 +49,7 @@ object CoinsRepository {
         updateBool = false
         // Передаюм ID последнего элемента, сохранённого в бд, как стартовый параметр для загрузки новых данных с сервера
         GlobalScope.launch {
-            onRefreshCoinsData("${itemAtEnd.localId}", limit, convert)
+            onRefreshCoinsData("${itemAtEnd.local_id}", limit, convert)
         }
     }
 
@@ -62,7 +62,7 @@ object CoinsRepository {
             val lastCoin: CoinsModel? = coinsDao.lastInsertRowid()
 
             if (lastCoin != null)
-                limit = lastCoin.localId!!
+                limit = lastCoin.local_id!!
             else {
                 limit = 30
                 updateBool = false
@@ -118,9 +118,9 @@ object CoinsRepository {
     }
 
     // Обновляем значение столбца favorites
-    fun setFavoritesRepo(position: String, value: Int): LiveData<PagedList<CoinsModel>>{
+    fun setFavoritesRepo(symbol: String, value: Int): LiveData<PagedList<CoinsModel>>{
         GlobalScope.launch(Dispatchers.IO) {
-            coinsDao.setFavorites(position, value)
+            coinsDao.setFavorites(symbol, value)
         }
         return pagedListBuilder(coinsDao.getCoins())
     }

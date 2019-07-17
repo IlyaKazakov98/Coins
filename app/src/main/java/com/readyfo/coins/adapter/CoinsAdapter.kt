@@ -6,10 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.readyfo.coins.Common
 import com.readyfo.coins.R
@@ -28,7 +26,7 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
 
     companion object{
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CoinsModel>(){
-            override fun areItemsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem.localId == newItem.localId
+            override fun areItemsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem.local_id == newItem.local_id
 
             override fun areContentsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem == newItem
         }
@@ -68,6 +66,7 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
             coinPrice.text = String.format("%.6g%n", coinsModel?.quote?.USD?.price)
             oneHourChange.text = "${coinsModel?.quote?.USD?.percent_change_1h} %"
             favoritesIcon.setImageResource(
+//                if (coinsModel?.fav_id?.get(coinsModel.local_id!!)?.favorites_id == 0){
                 if (coinsModel?.favorites == 0){
                     R.drawable.ic_favorites_false_24dp
                 } else{
