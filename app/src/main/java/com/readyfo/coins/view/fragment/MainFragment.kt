@@ -30,31 +30,15 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment(val context: Activity) : Fragment() {
     private lateinit var coinsViewModel: CoinsViewModel
-    private var adapter = CoinsAdapter(context)
-    private var initBool = true
+    private var adapter = CoinsAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_main, container, false)
-
         retainInstance = true
         setHasOptionsMenu(true)
-
-        coinsViewModel = ViewModelProviders.of(this).get(CoinsViewModel::class.java)
-        // Инициализируем загрузку данных в LiveData. Если данные были загружены/обновленны, то до следующего
-        // запуска приложения больше этого не делаем
-        if(initBool){
-            coinsViewModel.init()
-            initBool = false
-        }
-        // Подписываемся на изменение данных
-        coinsViewModel.getCoins().observe(this, Observer{
-            // Обновляем UI(передаём PagedList в адаптер)
-            adapter.submitList(it)
-        })
-        return view
+        return inflater.inflate(R.layout.fragment_main, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,6 +50,15 @@ class MainFragment(val context: Activity) : Fragment() {
         // Создаём Адаптер и привязываем его к RecyclerView
         coinRecyclerView.layoutManager = LinearLayoutManager(activity)
         coinRecyclerView.adapter = adapter
+
+        coinsViewModel = ViewModelProviders.of(this).get(CoinsViewModel::class.java)
+        // Инициализируем загрузку данных в LiveData.
+        coinsViewModel.init()
+        // Подписываемся на изменение данных
+        coinsViewModel.getCoins().observe(this, Observer{
+            // Обновляем UI(передаём PagedList в адаптер)
+            adapter.submitList(it)
+        })
 
         // Реагируем на жест пользователя
         val swipeHandler = object : SimpleItemTouchHelperCallback(context){
@@ -90,26 +83,19 @@ class MainFragment(val context: Activity) : Fragment() {
     }
 
     // Привязываем меню к фрагменту
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater?) {
-        inflater?.inflate(R.menu.main_menu, menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.main_menu, menu)
         initSearchView(menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     // Обрабатываем нажатия на пункты меню сортировки и передаём в качестве параметра имя столбца по которому будем сортировать
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when(item?.itemId){
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
             R.id.menuSortByPrice -> sortBy(0)
             R.id.menuSortByPercent -> sortBy(1)
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    // Получаем отсортированный PagedList и передаём его адаптеру
-    private fun sortBy(value: Int){
-        val resultSort = coinsViewModel.sortBy(value).value
-        Log.d("CoinsLog", "Sort: $value")
-        adapter.submitList(resultSort)
     }
 
     // Обрабатываем действия пользователя в поле поиска
@@ -119,22 +105,26 @@ class MainFragment(val context: Activity) : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null && query.isNotEmpty()){
-                    val resultSearch = coinsViewModel.searchBy(query).value
-                    Log.d("CoinsLog", "Search1: $resultSearch")
-                    adapter.submitList(resultSearch)
-                }
-                Log.d("CoinsLog", "onQueryTextSubmit1: $query")
+                val resultSearch =
+                    if (query != null || query != "")
+                        query?.let { coinsViewModel.searchBy(it).value }
+                    else
+                        query.let { coinsViewModel.getCoins().value}
+                adapter.submitList(resultSearch)
+                Log.d("CoinsLog", "onQueryTextSubmitSearch: $resultSearch")
+                Log.d("CoinsLog", "onQueryTextSubmitSearch: $query")
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null && newText.isNotEmpty()){
-                    val resultSearch = coinsViewModel.searchBy(newText).value
-                    Log.d("CoinsLog", "Search2: $resultSearch")
-                    adapter.submitList(resultSearch)
-                }
-                Log.d("CoinsLog", "onQueryTextSubmit2: $newText")
+                val resultSearch =
+                    if (newText != null || newText != "")
+                        newText?.let { coinsViewModel.searchBy(it).value }
+                    else
+                        newText.let { coinsViewModel.getCoins().value}
+                adapter.submitList(resultSearch)
+                Log.d("CoinsLog", "onQueryTextChangeSearch: $resultSearch")
+                Log.d("CoinsLog", "onQueryTextChangeSearch: $newText")
                 return true
             }
         })
@@ -148,5 +138,12 @@ class MainFragment(val context: Activity) : Fragment() {
             coinsViewModel.updateCoins()
         }
         swipeToRefresh.isRefreshing = false
+    }
+
+    // Получаем отсортированный PagedList и передаём его адаптеру
+    private fun sortBy(value: Int){
+        Log.d("CoinsLog", "Sort: $value")
+        val res = coinsViewModel.sortBy(value).value
+        adapter.submitList(res)
     }
 }

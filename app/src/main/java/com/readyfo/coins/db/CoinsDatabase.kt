@@ -6,17 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.readyfo.coins.db.dao.CoinsDao
 import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.model.FavoritesModel
 import com.readyfo.coins.model.GlobalMetricsModel
+import com.readyfo.coins.model.LastUpdateModel
 
 @Database(
-    entities = [CoinsModel::class, GlobalMetricsModel::class],
+    entities = [CoinsModel::class, FavoritesModel::class, GlobalMetricsModel::class, LastUpdateModel::class],
     exportSchema = false,
     version = 1
 )
 
-// @TypeConverters(
-//     QuoteConverter::class
-// )
 abstract class CoinsDatabase: RoomDatabase() {
 
     abstract fun getCoinsDao(): CoinsDao

@@ -1,6 +1,7 @@
 package com.readyfo.coins.view.fragment.viewpagerfragmens
 
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -9,38 +10,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateViewModelFactory
 import com.readyfo.coins.Common
 
 import com.readyfo.coins.R
 import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.viewmodel.DetailedInfoViewModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_detailed_info.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- *
- */
 class DetailedInfoFragment : Fragment() {
+    private var args: Bundle? = null
+    private val detailedInfoViewModel: DetailedInfoViewModel by viewModels(
+        factoryProducer = {SavedStateViewModelFactory(this)}
+    )
 
     // Создаётся экземпляр фрагмента
     companion object {
-        fun newInstance(coin: CoinsModel?): DetailedInfoFragment {
-            Log.d("CoinsLog", "TabModel: $coin")
+        fun newInstance(coinId: Int, favoritesId: Int): DetailedInfoFragment {
             val args = Bundle().apply {
-                putString("symbol", coin?.symbol)
-                putString("name", coin?.name)
-                putDouble("price", coin?.quote?.USD?.price!!)
-                putDouble("volume_24h", coin.quote.USD.volume_24h!!)
-                //putDouble("percent_change_1h", coin.quote.USD.percent_change_1h!!)
-                putDouble("percent_change_24h", coin.quote.USD.percent_change_24h!!)
-                putDouble("percent_change_7d", coin.quote.USD.percent_change_7d!!)
-                putDouble("market_cap", coin.quote.USD.market_cap!!)
-                putString("last_updated", coin.quote.USD.last_updated!!)
+                putInt("coinId", coinId)
+                putInt("favoritesId", favoritesId)
             }
 
             val fragment = DetailedInfoFragment()
@@ -59,33 +51,50 @@ class DetailedInfoFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // Записываем полученные данные в соответствующие им поля
-        val args = arguments
-        tabCoinSymbol.text = args?.getString("symbol")
-        tabCoinName.text = args?.getString("name")
-        tabPriceUSD.text = "${args?.getDouble("price")}"
+        super.onViewCreated(view, savedInstanceState)
+        args = arguments
+        detailedInfoViewModel.saveCurrentCoinId(args?.getInt("coinId"))
+        detailedInfoViewModel.getDetailedInfo().observe(viewLifecycleOwner, Observer {
+            refreshUI(it)
+        })
 
-        tabOneHourChange.text = "${args?.getDouble("percent_change_1h")}%"
-        setColorText(tabOneHourChange, "${args?.getDouble("percent_change_1h")}")
+        detailedFavoritesIcon.setImageResource(
+            if (args?.getInt("favoritesId") == 0){
+                R.drawable.ic_favorites_false_24dp
+            } else{
+                R.drawable.ic_favorites_true_24dp
+            })
+    }
 
-        tabVolumeTwentyFourHourChange.text = "${args?.getDouble("volume_24h")}"
+    @SuppressLint("SetTextI18n")
+    private fun refreshUI(coinModel: CoinsModel){
 
-        tabPercentTwentyFourHourChange.text = "${args?.getDouble("percent_change_24h")}%"
-        setColorText(tabPercentTwentyFourHourChange, "${args?.getDouble("percent_change_24h")}")
+        detailedCoinSymbol.text = coinModel.symbol
+        detailedCoinName.text = coinModel.name
+        detailedPriceUSD.text = stringFormat(coinModel.quote?.USD?.price)
 
-        tabPercentSevenDaysChange.text = "${args?.getDouble("percent_change_7d")}%"
-        setColorText(tabPercentSevenDaysChange, "${args?.getDouble("percent_change_7d")}")
+        detailedOneHourChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_1h)} %"
+        setColorText(detailedOneHourChange, "${coinModel.quote?.USD?.percent_change_1h}")
 
-        tabMarketCap.text = "${args?.getDouble("market_cap")}"
-        tabLastUpDated.text = "${args?.getString("last_updated")}"
+        detailedTwentyFourHourChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_24h)}%"
+        setColorText(detailedTwentyFourHourChange, "${coinModel.quote?.USD?.percent_change_24h}")
+
+        detailedSevenDaysChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_7d)}%"
+        setColorText(detailedSevenDaysChange, "${coinModel.quote?.USD?.percent_change_7d}")
+
+        detailedVolTwentyFourHourChange.text = stringFormat(coinModel.quote?.USD?.volume_24h)
+
+        detailedMarketCap.text = stringFormat(coinModel.quote?.USD?.market_cap)
+
+
 
         Picasso.get()
             .load(StringBuilder(Common.imageUrl)
-                .append(args?.getString("symbol")?.toLowerCase())
+                .append(coinModel.symbol?.toLowerCase())
                 .append(".png")
                 .toString())
-            .into(tabCoinIcon)
-        super.onViewCreated(view, savedInstanceState)
+            .into(detailedCoinIcon)
+
     }
 
     private fun setColorText(tv: TextView, text: String){
@@ -94,4 +103,6 @@ class DetailedInfoFragment : Fragment() {
                 Color.parseColor("#d94040")
             else Color.parseColor("#009e73"))
     }
+
+    private fun stringFormat(value: Double?) = String.format("%.2f", value)
 }

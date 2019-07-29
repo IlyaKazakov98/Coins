@@ -1,160 +1,122 @@
 package com.readyfo.coins.repository
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
 import com.readyfo.coins.App
+import com.readyfo.coins.Common.CONVERT_VALET
+import com.readyfo.coins.Common.ONE_HOUR_IN_SECOND
+import com.readyfo.coins.Common.TIME_IS_NOW
 import com.readyfo.coins.http.Api
 import com.readyfo.coins.model.CoinsModel
-import com.readyfo.coins.paging.CoinsBoundaryCallBack
+import com.readyfo.coins.model.MinimalCoinsModel
 import kotlinx.coroutines.*
 
 
 object CoinsRepository {
-    private var job: Job? = null
-    private const val convertValet = "USD"
-    private val boundaryCallBack = CoinsBoundaryCallBack()
+//    private val boundaryCallBack = CoinsBoundaryCallBack()
+    private var jobLastCoin: Job? = null
     private var updateBool = true
-    // private var updateGMBool = false
+    private var checkLastUpdateBool = true
 
     private val coinsDao by lazy {
         App.coinsDB.getCoinsDao()
     }
 
-    // Вызываем эту функцию при запуске приложения
-    fun initRepo(): LiveData<PagedList<CoinsModel>>{
+    fun loadCoinsRepo(forcedUpdate: Boolean): DataSource.Factory<Int, MinimalCoinsModel> {
         GlobalScope.launch {
-            // Узнаём надо записать данные или обновить
-            val limit = lastCoin()
-            onRefreshCoinsData("1", "$limit", convertValet)
+            val limit = checkLastCoin()
+            // Проверяем время последнего обновление
+            if (updateBool) {
+                checkLastUpdateBool = checkLastUpdate(forcedUpdate)
+            }
+            // Если прошло больше часа с последнего обновления, то обновляем
+            if (checkLastUpdateBool)
+                onRefreshCoinsData("1", "$limit", CONVERT_VALET)
         }
-        return pagedListBuilder(coinsDao.getCoins())
-    }
-
-    fun updateCoinsRepo(): LiveData<PagedList<CoinsModel>>{
-        GlobalScope.launch {
-            // Определяем последний сохранённый элемент в бд и передаём его как размер загружаемых данных с сервера для
-            // обновления
-            val limit = lastCoin()
-            updateBool = true
-            onRefreshCoinsData("1", "$limit", convertValet)
-        }
-        return pagedListBuilder(coinsDao.getCoins())
+        return coinsDao.getCoins()
     }
 
     // Подгрузка данных с сервера в бд, по просьбе BoundaryCallback()
-    fun itemAtEndLoaded(itemAtEnd: CoinsModel, limit: String, convert: String){
+    fun itemAtEndLoaded(itemAtEnd: MinimalCoinsModel, limit: String, convert: String){
         updateBool = false
         // Передаюм ID последнего элемента, сохранённого в бд, как стартовый параметр для загрузки новых данных с сервера
         GlobalScope.launch {
-            onRefreshCoinsData("${itemAtEnd.local_id}", limit, convert)
+            Log.d("CoinsLog", "itemAtEndLoaded: $itemAtEnd")
+            onRefreshCoinsData("${itemAtEnd.coin_id?.plus(1)}", limit, convert)
         }
+    }
+
+    private suspend fun onRefreshCoinsData(start: String, limit: String, convert: String){
+        // Делаем запрос на сервер, не блокируя поток
+        GlobalScope.launch(Dispatchers.IO){
+            try {
+                val response = Api.coinsApi.getCoinsAsync(start, limit, convert).await()
+                // Проверяем что нам надо сделать с полученными данными и в зависимости от этого сохроняем или обновляем их
+                withContext(Dispatchers.Default){
+                    if (updateBool) {
+                        coinsDao.updateCoinsTrans(response.data, TIME_IS_NOW)
+                        Log.d("CoinsLog", "Update")
+                    }
+                    else {
+                        coinsDao.insertCoinsTrans(response.data, TIME_IS_NOW)
+                        updateBool = true
+                        Log.d("CoinsLog", "Insert")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("CoinsErrorLog", "ThrowableRefreshCoins: ${e.message}")
+            }
+        }
+    }
+
+    // Обновляем значение столбца favorites
+    fun setFavoritesRepo(symbol: String, value: Int): DataSource.Factory<Int, MinimalCoinsModel>{
+        GlobalScope.launch(Dispatchers.IO) {
+            coinsDao.setFavorites(symbol, value)
+
+            Log.d("CoinsLog", "FavCoins $symbol: ${coinsDao.getFavorites(symbol)}")
+        }
+        return coinsDao.getCoins()
     }
 
     // Функция проверки наличия данных в бд. В дальнейшем(onRefreshCoinsData()), зависимости от результата мы обновим
     // или запишим данные в бд
-    private suspend fun lastCoin(): Int{
+    private suspend fun checkLastCoin(): Int{
         var limit = 0
 
-        job = GlobalScope.launch {
-            val lastCoin: CoinsModel? = coinsDao.lastInsertRowid()
+        jobLastCoin = GlobalScope.launch {
+            val lastCoin: CoinsModel? = coinsDao.checkLastCoin()
 
             if (lastCoin != null)
-                limit = lastCoin.local_id!!
+                limit = lastCoin.coin_id!!
             else {
                 limit = 30
                 updateBool = false
             }
         }
         // Дожидаемся ответа от бд и только после этого идём дальше
-        job!!.join()
+        jobLastCoin!!.join()
 
         Log.d("CoinsLog", "InsertOrUpdate: $limit")
+
         return limit
     }
 
-    // Обновляем данные в DataSource и строим PagedList
-    private fun pagedListBuilder(query: DataSource.Factory<Int, CoinsModel>): LiveData<PagedList<CoinsModel>>{
-        // Задаём параметры PagedList
-        val pagedListConfig = PagedList.Config.Builder()
-            .setEnablePlaceholders(true)
-            .setInitialLoadSizeHint(30)
-            .setPrefetchDistance(10)
-            .setPageSize(30)
-            .build()
+    // Пороверяем последнее время обновления, если разница превышает 1 час, то обновляем. Если обновленин происходит по
+    // просьбе пользователя(forcedUpdate), то обновляем в обязательном порядке
+    private fun checkLastUpdate(forcedUpdate: Boolean): Boolean {
+        var localStartUpdated = true
 
-        return LivePagedListBuilder(query, pagedListConfig)
-            .setBoundaryCallback(boundaryCallBack)
-            .build()
-    }
+        return if (forcedUpdate)
+            localStartUpdated
+        else {
+            val lastTimeUpdate: Long = coinsDao.checkLastCoinsUpdate()
+            if (TIME_IS_NOW - lastTimeUpdate <= ONE_HOUR_IN_SECOND)
+                localStartUpdated = false
 
-    private suspend fun onRefreshCoinsData(start: String, limit: String, convert: String){
-        // Делаем сразу 2 запроса на сервер, не блокируя поток
-        GlobalScope.launch(Dispatchers.IO){
-            try {
-                val response = Api.coinsApi.getCoinsAsync(start, limit, convert).await()
-                val responseGM = Api.coinsApi.getGlobalMetrics(convert).await()
-                // Проверяем что нам надо сделать с полученными данными и в зависимости от этого сохроняем или обновляем их
-                if (updateBool) {
-                    withContext(Dispatchers.Default) {
-                        coinsDao.updateCoinsAndGM(response.data, responseGM.data)
-                        Log.d("CoinsLog", "HaveGM: ${coinsDao.getGlobalMetrics().value}")
-                        Log.d("CoinsLog", "Update")
-                    }
-                }
-                else {
-                    withContext(Dispatchers.Default) {
-                        coinsDao.insertCoinsAndGM(response.data, responseGM.data)
-                        Log.d("CoinsLog", "Insert")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("CoinsErrorLog", "ThrowableRefreshCoins: ${e.message}")
-                // Snackbar.make(this, "Данные не обновленны, проверте подключение к интернету,", Snackbar.LENGTH_LONG)
-            }
+            Log.d("CoinsLog", "Разница: ${TIME_IS_NOW - lastTimeUpdate}")
+
+            localStartUpdated
         }
     }
-
-    // Обновляем значение столбца favorites
-    fun setFavoritesRepo(symbol: String, value: Int): LiveData<PagedList<CoinsModel>>{
-        GlobalScope.launch(Dispatchers.IO) {
-            coinsDao.setFavorites(symbol, value)
-        }
-        return pagedListBuilder(coinsDao.getCoins())
-    }
-
-    // Поиск по имения криптовальты
-    fun searchByRepo(newText: String): LiveData<PagedList<CoinsModel>> {
-        GlobalScope.launch(Dispatchers.IO) {
-            Log.d("CoinsLog", "searchByCoins: ${coinsDao.testSearchBy(newText)}")
-        }
-        return pagedListBuilder(coinsDao.searchBy(newText))
-    }
-
-    // Сортировк по цене и изменению процента
-    fun sortByRepo(value: Int): LiveData<PagedList<CoinsModel>> {
-        GlobalScope.launch(Dispatchers.IO) {
-            Log.d("CoinsLog", "sortByCoins: ${coinsDao.testSortBy()}")
-        }
-        return pagedListBuilder(when(value){
-            0 -> coinsDao.sortByPrice()
-            else -> coinsDao.sortByPercent()
-        })
-    }
-
-//    private suspend fun dataAvailabilityCheck(): Boolean?{
-//        var haveData: Boolean? = null
-//
-//        job = GlobalScope.launch {
-//            haveData = coinsDao.dataAvailabilityCheckDB() > 0
-//            Log.d("CoinsLog", "haveData: $haveData")
-//        }
-//        job?.join()
-//
-//        return haveData
-//    }
 }
-
-

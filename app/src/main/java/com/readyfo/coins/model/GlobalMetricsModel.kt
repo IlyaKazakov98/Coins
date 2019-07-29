@@ -19,16 +19,14 @@ data class GlobalMetricsModel(
     val active_exchanges: Int,
     @Embedded
     val quote: GlobalMetricsQuote
-)
-{
+){
     @PrimaryKey(autoGenerate = false)
-    var id = 0
+    var id : Int = 0
 }
 
 data class GlobalMetricsQuote(
     @Embedded
-    @SerializedName("USD")
-    val uSD: GlobalMetricsUSD
+    val USD: GlobalMetricsUSD
 )
 
 data class GlobalMetricsUSD(

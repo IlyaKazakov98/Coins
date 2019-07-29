@@ -10,16 +10,22 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="LinearLayoutStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:layout_margin">@dimen/base_margin</item>
+    <style name="AppThemeLauncher" parent="Theme.AppCompat.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
 
-    <style name="TextViewStyle">
+    <style name="TVBaseTextSizeStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">@dimen/text_size</item>
+        <item name="android:textSize">@dimen/base_text_size</item>
+        <item name="android:textColor">@color/colorText</item>
+    </style>
+
+    <style name="TVBigTextSizeStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/big_text_size</item>
+        <item name="android:textColor">@color/colorText</item>
     </style>
 </resources>

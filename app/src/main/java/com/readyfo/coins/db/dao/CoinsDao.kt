@@ -1,82 +1,96 @@
 package com.readyfo.coins.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.room.*
+import androidx.room.OnConflictStrategy.REPLACE
 import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.model.FavoritesModel
 import com.readyfo.coins.model.GlobalMetricsModel
+import com.readyfo.coins.model.MinimalCoinsModel
 
 @Dao
 abstract class CoinsDao {
-    // Сохранение в бд
+    // CoinsRepository:
     @Transaction
-    open suspend fun insertCoinsAndGM(listCoinsModel: List<CoinsModel>, globalMetricsModel: GlobalMetricsModel){
-        insert(listCoinsModel)
-        insertGM(globalMetricsModel)
+    open suspend fun insertCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long){
+        insertCoins(listCoinsModel)
+        insertFavorites()
+        insertLastCoinsUpdate(lastTimeUpdate)
     }
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insert(listCoinsModel: List<CoinsModel>)
+    @Insert(onConflict = REPLACE)
+    abstract suspend fun insertCoins(listCoinsModel: List<CoinsModel>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertGM(globalMetricsModel: GlobalMetricsModel)
+    @Query("INSERT OR REPLACE INTO favorites_table(fav_coin_id, fav_symbol, favorites_id) SELECT coin_id, symbol, 0 FROM coins_table")
+    abstract suspend fun insertFavorites()
 
-    // Обновление бд
+    @Query("INSERT OR REPLACE INTO last_update_table(id, last_time_coins_update) VALUES (0, :lastTimeUpdate)")
+    abstract suspend fun insertLastCoinsUpdate(lastTimeUpdate: Long)
+
     @Transaction
-    open suspend fun updateCoinsAndGM(listCoinsModel: List<CoinsModel>, globalMetricsModel: GlobalMetricsModel){
-        update(listCoinsModel)
-        updateGM(globalMetricsModel)
+    open suspend fun updateCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long){
+        updateCoins(listCoinsModel)
+        insertLastCoinsUpdate(lastTimeUpdate)
     }
-
     @Update
-    abstract suspend fun update(listCoinsModel: List<CoinsModel>)
+    abstract suspend fun updateCoins(listCoinsModel: List<CoinsModel>)
+
+    @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY favorites_table.favorites_id DESC, coin_id ASC")
+    abstract fun getCoins(): DataSource.Factory<Int, MinimalCoinsModel>
+
+    @Query("SELECT * from coins_table  ORDER BY coin_id DESC LIMIT 1")
+    abstract fun checkLastCoin(): CoinsModel
+
+    @Query("SELECT last_time_coins_update FROM last_update_table ORDER BY id LIMIT 1")
+    abstract fun checkLastCoinsUpdate(): Long
+
+    @Query("UPDATE favorites_table SET favorites_id = :value WHERE fav_symbol = :symbolCoin" )
+    abstract suspend fun setFavorites(symbolCoin: String, value: Int)
+
+    @Query("SELECT favorites_id FROM favorites_table WHERE fav_symbol = :symbolCoin" )
+    abstract suspend fun getFavorites(symbolCoin: String): Int
+
+    // GlobalMetricsRepository:
+    @Insert(onConflict = REPLACE)
+    abstract suspend fun insertGM(globalMetricsModel: GlobalMetricsModel): Long
 
     @Update
     abstract suspend fun updateGM(globalMetricsModel: GlobalMetricsModel)
 
-    @Query("UPDATE coins_table SET favorites = :value WHERE symbol = :symbolCoin" )
-    abstract suspend fun setFavorites(symbolCoin: String, value: Int)
+    @Query("UPDATE last_update_table SET last_time_gm_update = :lastTimeUpdate WHERE id = 0")
+    abstract suspend fun updateLastGMUpdate(lastTimeUpdate: Long)
 
-//    @Query("UPDATE favorites_table SET favorites_id = :value WHERE favorites_symbol = :symbolCoin" )
-//    abstract suspend fun setFavorites(symbolCoin: String, value: Int)
+    @Query("SELECT * FROM global_metrics_table")
+    abstract fun loadGM(): LiveData<GlobalMetricsModel>
 
-    // Проверка на наличие данных
-    @Query("SELECT * from coins_table  ORDER BY local_id DESC LIMIT 1")
-    abstract fun lastInsertRowid(): CoinsModel
+    @Query("SELECT btc_dominance FROM global_metrics_table ORDER BY id LIMIT 1")
+    abstract fun checkHaveData(): Double
 
-    @Query("SELECT id from global_metrics_table  ORDER BY id ASC LIMIT 1")
-    abstract fun dataAvailabilityCheckDB(): Int
+    @Query("SELECT last_time_gm_update FROM last_update_table ORDER BY id LIMIT 1")
+    abstract fun checkLastGMUpdate(): Long
 
-    // Запрос на получение данных для DataSource
+    //DetailedInfoRepository:
+    @Query("SELECT * FROM coins_table WHERE coin_id LIKE :coinId")
+    abstract fun loadDetailedInfo(coinId: Int): LiveData<CoinsModel>
 
-    @Query("SELECT * from coins_table ORDER BY favorites DESC, local_id ASC")
-    abstract fun getCoins(): DataSource.Factory<Int, CoinsModel>
+    @Query("SELECT * FROM favorites_table WHERE fav_coin_id LIKE :coinId")
+    abstract fun loadFavoritesDetailed(coinId: Int): LiveData<FavoritesModel>
 
-//    @Query("SELECT * from coins_table ORDER BY (SELECT favorites_table.favorites_id FROM favorites_table INNER JOIN coins_table ON coins_table.symbol = favorites_symbol)  DESC, local_id ASC")
-//    abstract fun getCoins(): DataSource.Factory<Int, CoinsModel>
+    // SearchAndSortRepository
+    @Query("SELECT * FROM coins_table WHERE name LIKE '%' || :newText || '%'")
+    abstract fun searchBy(newText: String): DataSource.Factory<Int, MinimalCoinsModel>
 
-    @Query("SELECT * from global_metrics_table")
-    abstract fun getGlobalMetrics(): LiveData<GlobalMetricsModel>
+    @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY price DESC")
+    abstract fun sortByPrice(): DataSource.Factory<Int, MinimalCoinsModel>
 
-    @Query("SELECT * FROM coins_table WHERE name LIKE :newText || '%'")
-    abstract fun searchBy(newText: String): DataSource.Factory<Int, CoinsModel>
+    @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY percent_change_1h DESC")
+    abstract fun sortByPercent(): DataSource.Factory<Int, MinimalCoinsModel>
 
-    @Query("SELECT * FROM coins_table ORDER BY price DESC")
-    abstract fun sortByPrice(): DataSource.Factory<Int, CoinsModel>
+        // Тестовые запросы для логов
+        @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY favorites_table.favorites_id DESC, price DESC")
+        abstract suspend fun testSortBy(): List<MinimalCoinsModel>
 
-    @Query("SELECT * FROM coins_table ORDER BY percent_change_1h DESC")
-    abstract fun sortByPercent(): DataSource.Factory<Int, CoinsModel>
-
-    // Тестовые запросы для логов
-    @Query("SELECT * FROM coins_table ORDER BY favorites DESC")
-    abstract suspend fun testSortBy(): List<CoinsModel>
-
-    @Query("SELECT * FROM coins_table  WHERE name LIKE :newText || '%'")
-    abstract suspend fun testSearchBy(newText: String): List<CoinsModel>
-
-
-    // Удаление из бд
-    @Query("DELETE FROM coins_table")
-    abstract suspend fun deleteAll()
+        @Query("SELECT * FROM coins_table  WHERE name LIKE '%' || :newText || '%'")
+        abstract suspend fun testSearchBy(newText: String): List<CoinsModel>
 }

@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.readyfo.coins.Common
 import com.readyfo.coins.R
-import com.readyfo.coins.model.CoinsModel
+import com.readyfo.coins.model.MinimalCoinsModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.coin_layout.view.*
 
-class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, CoinsAdapter.CoinsViewHolder>(DIFF_CALLBACK) {
+class CoinsAdapter(): PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsViewHolder>(DIFF_CALLBACK) {
     override fun onBindViewHolder(holder: CoinsViewHolder, position: Int) =
         holder.bindTo(getItem(position))
 
@@ -25,10 +25,10 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
         CoinsViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.coin_layout, parent, false))
 
     companion object{
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CoinsModel>(){
-            override fun areItemsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem.local_id == newItem.local_id
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MinimalCoinsModel>(){
+            override fun areItemsTheSame(oldItem: MinimalCoinsModel, newItem: MinimalCoinsModel): Boolean = oldItem.coin_id == newItem.coin_id
 
-            override fun areContentsTheSame(oldItem: CoinsModel, newItem: CoinsModel): Boolean = oldItem == newItem
+            override fun areContentsTheSame(oldItem: MinimalCoinsModel, newItem: MinimalCoinsModel): Boolean = oldItem == newItem
         }
     }
 
@@ -42,32 +42,29 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
         private var coinPrice = itemView.priceUSD
         private var oneHourChange = itemView.oneHourChange
 
-        private var coinsModel: CoinsModel? = null
+        private var minimalCoinsModel: MinimalCoinsModel? = null
 
         /**
          * Bind data
          */
-        fun bindTo(coinsModel: CoinsModel?) {
-            this.coinsModel = coinsModel
+        fun bindTo(minimalCoinsModel1: MinimalCoinsModel?) {
+            this.minimalCoinsModel = minimalCoinsModel1
 
             // Обрабатываем нажатия на элемент RecyclerView и передаём данные о нём, по цепочке, в ViewPager
             parentLayout.setOnClickListener{
-                Log.d("CoinsLog", "ModelInAdapter: $coinsModel")
-
-                if (coinsModel != null) {
-                    val listener = context as ItemClickListener
-                    listener.onClickItem(coinsModel)
+                if (minimalCoinsModel1 != null) {
+                    val listener = parentLayout.context as ItemClickListener
+                    listener.onClickItem(minimalCoinsModel1.coin_id!!, minimalCoinsModel?.favorites?.favorites_id!!)
                 }
             }
 
             // Записываем данные в coin_layout
-            coinSymbol.text = coinsModel?.symbol
-            coinName.text = coinsModel?.name
-            coinPrice.text = String.format("%.6g%n", coinsModel?.quote?.USD?.price)
-            oneHourChange.text = "${coinsModel?.quote?.USD?.percent_change_1h} %"
+            coinSymbol.text = minimalCoinsModel1?.symbol
+            coinName.text = minimalCoinsModel1?.name
+            coinPrice.text = stringFormat(minimalCoinsModel1?.quote?.USD?.price)
+            oneHourChange.text = stringFormat(minimalCoinsModel1?.quote?.USD?.percent_change_1h)
             favoritesIcon.setImageResource(
-//                if (coinsModel?.fav_id?.get(coinsModel.local_id!!)?.favorites_id == 0){
-                if (coinsModel?.favorites == 0){
+                if (minimalCoinsModel?.favorites?.favorites_id == 0){
                     R.drawable.ic_favorites_false_24dp
                 } else{
                     R.drawable.ic_favorites_true_24dp
@@ -77,21 +74,22 @@ class CoinsAdapter(internal var context: Context): PagedListAdapter<CoinsModel, 
 
             Picasso.get()
                 .load(StringBuilder(Common.imageUrl)
-                    .append(coinsModel?.symbol?.toLowerCase())
+                    .append(minimalCoinsModel1?.symbol?.toLowerCase())
                     .append(".png")
                     .toString())
                 .into(coinsIcon)
 
             oneHourChange.setTextColor(
-                if ("${coinsModel?.quote?.USD?.percent_change_1h}".contains("-"))
+                if ("${minimalCoinsModel1?.quote?.USD?.percent_change_1h}".contains("-"))
                     Color.parseColor("#d94040")
                 else Color.parseColor("#009e73")
             )
         }
     }
 
-    interface ItemClickListener {
-        fun onClickItem(coinsModel: CoinsModel)
-    }
+    private fun stringFormat(value: Double?) = String.format("%.2f", value)
 
+    interface ItemClickListener {
+        fun onClickItem(coinsId: Int, favoritesId: Int)
+    }
 }
