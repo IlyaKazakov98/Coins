@@ -1,22 +1,21 @@
 package com.readyfo.coins.paging
 
 import androidx.paging.PagedList
-import com.readyfo.coins.model.CoinsModel
 import com.readyfo.coins.model.MinimalCoinsModel
 import com.readyfo.coins.repository.CoinsRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-class CoinsBoundaryCallBack: PagedList.BoundaryCallback<MinimalCoinsModel>() {
+class CoinsBoundaryCallBack : PagedList.BoundaryCallback<MinimalCoinsModel>() {
 
     override fun onZeroItemsLoaded() {
         super.onZeroItemsLoaded()
     }
 
     override fun onItemAtEndLoaded(itemAtEnd: MinimalCoinsModel) {
-        GlobalScope.launch {
-            withContext(Dispatchers.Default) {
-                CoinsRepository.itemAtEndLoaded(itemAtEnd, "30", "USD")
-            }
+        GlobalScope.launch(Dispatchers.IO) {
+            CoinsRepository.itemAtEndLoaded(itemAtEnd, "30", "USD")
         }
     }
 

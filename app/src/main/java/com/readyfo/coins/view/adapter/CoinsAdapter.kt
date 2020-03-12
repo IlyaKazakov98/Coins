@@ -62,7 +62,7 @@ class CoinsAdapter(): PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsView
             coinPrice.text = stringFormat(minimalCoinsModel1?.quote?.USD?.price)
             oneHourChange.text = stringFormat(minimalCoinsModel1?.quote?.USD?.percent_change_1h)
             favoritesIcon.setImageResource(
-                if (minimalCoinsModel?.favorites?.favorites_id == 0){
+                if (minimalCoinsModel?.favorites?.favorites_id == 0 || minimalCoinsModel?.favorites?.favorites_id == null){
                     R.drawable.ic_favorites_false_24dp
                 } else{
                     R.drawable.ic_favorites_true_24dp

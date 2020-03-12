@@ -4,17 +4,16 @@ package com.readyfo.coins.view.fragment.viewpagerfragments
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateViewModelFactory
 import com.readyfo.coins.App
 import com.readyfo.coins.Common
-
 import com.readyfo.coins.R
 import com.readyfo.coins.model.CoinsModel
 import com.readyfo.coins.viewmodel.DetailedInfoViewModel
@@ -24,7 +23,7 @@ import kotlinx.android.synthetic.main.fragment_detailed_info.*
 class DetailedInfoFragment : Fragment() {
     private var args: Bundle? = null
     private val detailedInfoViewModel: DetailedInfoViewModel by viewModels(
-        factoryProducer = {SavedStateViewModelFactory(App(), this)}
+        factoryProducer = { SavedStateViewModelFactory(App(), this) }
     )
 
     // Создаётся экземпляр фрагмента
@@ -45,9 +44,7 @@ class DetailedInfoFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_detailed_info, container, false)
-        retainInstance = true
-        return view
+        return inflater.inflate(R.layout.fragment_detailed_info, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -59,15 +56,16 @@ class DetailedInfoFragment : Fragment() {
         })
 
         detailedFavoritesIcon.setImageResource(
-            if (args?.getInt("favoritesId") == 0){
+            if (args?.getInt("favoritesId") == 0) {
                 R.drawable.ic_favorites_false_24dp
-            } else{
+            } else {
                 R.drawable.ic_favorites_true_24dp
-            })
+            }
+        )
     }
 
     @SuppressLint("SetTextI18n")
-    private fun refreshUI(coinModel: CoinsModel){
+    private fun refreshUI(coinModel: CoinsModel) {
 
         detailedCoinSymbol.text = coinModel.symbol
         detailedCoinName.text = coinModel.name
@@ -76,7 +74,8 @@ class DetailedInfoFragment : Fragment() {
         detailedOneHourChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_1h)} %"
         setColorText(detailedOneHourChange, "${coinModel.quote?.USD?.percent_change_1h}")
 
-        detailedTwentyFourHourChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_24h)}%"
+        detailedTwentyFourHourChange.text =
+            "${stringFormat(coinModel.quote?.USD?.percent_change_24h)}%"
         setColorText(detailedTwentyFourHourChange, "${coinModel.quote?.USD?.percent_change_24h}")
 
         detailedSevenDaysChange.text = "${stringFormat(coinModel.quote?.USD?.percent_change_7d)}%"
@@ -89,19 +88,22 @@ class DetailedInfoFragment : Fragment() {
 
 
         Picasso.get()
-            .load(StringBuilder(Common.imageUrl)
-                .append(coinModel.symbol?.toLowerCase())
-                .append(".png")
-                .toString())
+            .load(
+                StringBuilder(Common.imageUrl)
+                    .append(coinModel.symbol?.toLowerCase())
+                    .append(".png")
+                    .toString()
+            )
             .into(detailedCoinIcon)
 
     }
 
-    private fun setColorText(tv: TextView, text: String){
+    private fun setColorText(tv: TextView, text: String) {
         tv.setTextColor(
             if (text.contains("-"))
                 Color.parseColor("#d94040")
-            else Color.parseColor("#009e73"))
+            else Color.parseColor("#009e73")
+        )
     }
 
     private fun stringFormat(value: Double?) = String.format("%.2f", value)

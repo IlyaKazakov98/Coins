@@ -9,11 +9,12 @@ import com.readyfo.coins.Common.TIME_IS_NOW
 import com.readyfo.coins.http.Api
 import com.readyfo.coins.model.CoinsModel
 import com.readyfo.coins.model.MinimalCoinsModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 
 object CoinsRepository {
-//    private val boundaryCallBack = CoinsBoundaryCallBack()
     private var jobLastCoin: Job? = null
     private var updateBool = true
     private var checkLastUpdateBool = true
@@ -22,66 +23,52 @@ object CoinsRepository {
         App.coinsDB.getCoinsDao()
     }
 
-    fun loadCoinsRepo(forcedUpdate: Boolean): DataSource.Factory<Int, MinimalCoinsModel> {
-        GlobalScope.launch {
-            val limit = checkLastCoin()
-            // Проверяем время последнего обновление
-            if (updateBool) {
-                checkLastUpdateBool = checkLastUpdate(forcedUpdate)
-            }
-            // Если прошло больше часа с последнего обновления, то обновляем
-            if (checkLastUpdateBool)
-                onRefreshCoinsData("1", "$limit", CONVERT_VALET)
-        }
+    suspend fun loadCoinsRepo(forcedUpdate: Boolean): DataSource.Factory<Int, MinimalCoinsModel> {
+        val limit = checkLastCoin()
+        // Проверяем время последнего обновление
+        if (updateBool)
+            checkLastUpdateBool = checkLastUpdate(forcedUpdate)
+        // Если прошло больше часа с последнего обновления, то обновляем
+        if (checkLastUpdateBool)
+            onRefreshCoinsData("1", "$limit", CONVERT_VALET)
         return coinsDao.getCoins()
     }
 
     // Подгрузка данных с сервера в бд, по просьбе BoundaryCallback()
-    fun itemAtEndLoaded(itemAtEnd: MinimalCoinsModel, limit: String, convert: String){
+    suspend fun itemAtEndLoaded(itemAtEnd: MinimalCoinsModel, limit: String, convert: String) {
         updateBool = false
         // Передаюм ID последнего элемента, сохранённого в бд, как стартовый параметр для загрузки новых данных с сервера
-        GlobalScope.launch {
-            Log.d("CoinsLog", "itemAtEndLoaded: $itemAtEnd")
-            onRefreshCoinsData("${itemAtEnd.coin_id?.plus(1)}", limit, convert)
-        }
+        Log.d("CoinsLog", "itemAtEndLoaded: $itemAtEnd")
+        onRefreshCoinsData("${itemAtEnd.coin_id?.plus(1)}", limit, convert)
     }
 
-    private suspend fun onRefreshCoinsData(start: String, limit: String, convert: String){
+    private suspend fun onRefreshCoinsData(start: String, limit: String, convert: String) {
         // Делаем запрос на сервер, не блокируя поток
-        GlobalScope.launch(Dispatchers.IO){
-            try {
-                val response = Api.coinsApi.getCoinsAsync(start, limit, convert).await()
-                // Проверяем что нам надо сделать с полученными данными и в зависимости от этого сохроняем или обновляем их
-                withContext(Dispatchers.Default){
-                    if (updateBool) {
-                        coinsDao.updateCoinsTrans(response.data, TIME_IS_NOW)
-                        Log.d("CoinsLog", "Update")
-                    }
-                    else {
-                        coinsDao.insertCoinsTrans(response.data, TIME_IS_NOW)
-                        updateBool = true
-                        Log.d("CoinsLog", "Insert")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("CoinsErrorLog", "ThrowableRefreshCoins: ${e.message}")
+        try {
+            val response = Api.coinsApi.getCoinsAsync(start, limit, convert).await()
+            // Проверяем что нам надо сделать с полученными данными и в зависимости от этого сохроняем или обновляем их
+            if (updateBool) {
+                coinsDao.updateCoinsTrans(response.data, TIME_IS_NOW)
+                Log.d("CoinsLog", "Update")
+            } else {
+                coinsDao.insertCoinsTrans(response.data, TIME_IS_NOW)
+                updateBool = true
+                Log.d("CoinsLog", "CoinsLog")
             }
+
+        } catch (e: Exception) {
+            Log.e("CoinsErrorLog", "ThrowableRefreshCoins: ${e.message}")
         }
     }
 
     // Обновляем значение столбца favorites
-    fun setFavoritesRepo(symbol: String, value: Int): DataSource.Factory<Int, MinimalCoinsModel>{
-        GlobalScope.launch(Dispatchers.IO) {
-            coinsDao.setFavorites(symbol, value)
-
-            Log.d("CoinsLog", "FavCoins $symbol: ${coinsDao.getFavorites(symbol)}")
-        }
-        return coinsDao.getCoins()
+    suspend fun setFavoritesRepo(symbol: String, value: Int) {
+        coinsDao.setFavorites(symbol, value)
     }
 
     // Функция проверки наличия данных в бд. В дальнейшем(onRefreshCoinsData()), зависимости от результата мы обновим
     // или запишим данные в бд
-    private suspend fun checkLastCoin(): Int{
+    private suspend fun checkLastCoin(): Int {
         var limit = 0
 
         jobLastCoin = GlobalScope.launch {
@@ -97,8 +84,6 @@ object CoinsRepository {
         // Дожидаемся ответа от бд и только после этого идём дальше
         jobLastCoin!!.join()
 
-        Log.d("CoinsLog", "InsertOrUpdate: $limit")
-
         return limit
     }
 
@@ -113,8 +98,6 @@ object CoinsRepository {
             val lastTimeUpdate: Long = coinsDao.checkLastCoinsUpdate()
             if (TIME_IS_NOW - lastTimeUpdate <= ONE_HOUR_IN_SECOND)
                 localStartUpdated = false
-
-            Log.d("CoinsLog", "Разница: ${TIME_IS_NOW - lastTimeUpdate}")
 
             localStartUpdated
         }

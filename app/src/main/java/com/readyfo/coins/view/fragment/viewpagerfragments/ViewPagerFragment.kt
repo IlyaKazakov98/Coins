@@ -2,14 +2,13 @@ package com.readyfo.coins.view.fragment.viewpagerfragments
 
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
-
 import com.readyfo.coins.R
 import kotlinx.android.synthetic.main.fragment_view_pager.*
 
@@ -21,9 +20,8 @@ class ViewPagerFragment(private val coinId: Int, private val favoritesId: Int) :
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_view_pager, container, false)
         retainInstance = true
-        return view
+        return inflater.inflate(R.layout.fragment_view_pager, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

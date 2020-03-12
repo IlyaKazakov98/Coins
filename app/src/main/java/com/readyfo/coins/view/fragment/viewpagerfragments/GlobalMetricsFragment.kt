@@ -2,14 +2,13 @@ package com.readyfo.coins.view.fragment.viewpagerfragments
 
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.readyfo.coins.Common
-
 import com.readyfo.coins.R
 import com.readyfo.coins.model.GlobalMetricsModel
 import com.readyfo.coins.viewmodel.GlobalMetricsViewModel
@@ -17,7 +16,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_global_metrics.*
 
 class GlobalMetricsFragment : Fragment() {
-    private lateinit var globalMetricsViewModel: GlobalMetricsViewModel
+    private val globalMetricsViewModel: GlobalMetricsViewModel by viewModels()
 
     // Создаётся экземпляр фрагмента
     companion object {
@@ -30,15 +29,12 @@ class GlobalMetricsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_global_metrics, container, false)
-        retainInstance = true
-        return view
+        return inflater.inflate(R.layout.fragment_global_metrics, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        globalMetricsViewModel = ViewModelProviders.of(this).get(GlobalMetricsViewModel::class.java)
         globalMetricsViewModel.init()
-        globalMetricsViewModel.getGlobalMetrics().observe(this, Observer {
+        globalMetricsViewModel.getGlobalMetrics().observe(viewLifecycleOwner, Observer {
             it?.let {
                 refreshUI(it)
             }

@@ -1,48 +1,82 @@
 package com.readyfo.coins.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.readyfo.coins.model.CoinsModel
 import com.readyfo.coins.model.MinimalCoinsModel
 import com.readyfo.coins.paging.CoinsBoundaryCallBack
 import com.readyfo.coins.repository.CoinsRepository
 import com.readyfo.coins.repository.SearchAndSortRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
-class CoinsViewModel: ViewModel() {
-    private lateinit var coinLiveData: LiveData<PagedList<MinimalCoinsModel>>
+class CoinsViewModel : ViewModel() {
+    private lateinit var coinsMediatorLiveData: MediatorLiveData<PagedList<MinimalCoinsModel>>
+    private lateinit var coinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
+    private lateinit var searchCoinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
+    private lateinit var sortCoinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
     private val boundaryCallBack = CoinsBoundaryCallBack()
 
-    fun init(){
+    fun init() {
         // Инициализируем LiveData и запрашиваем PagedList у Репозитория
-        if (this::coinLiveData.isInitialized)
+        if (this::coinsLiveData.isInitialized)
             return
-        else
-            coinLiveData = pagedListBuilder(CoinsRepository.loadCoinsRepo(false))
+        else {
+            coinsMediatorLiveData = MediatorLiveData<PagedList<MinimalCoinsModel>>()
+            updateCoins(false)
+        }
     }
 
-    // Функция для запроса coinLiveData на обновленеие данных в Activity/Fragment
-    fun getCoins() = coinLiveData
+    val coins: LiveData<PagedList<MinimalCoinsModel>>
+        get() = coinsMediatorLiveData
 
-    // Функция обновления
-    fun updateCoins(){
-        coinLiveData = pagedListBuilder(CoinsRepository.loadCoinsRepo(true))
+    fun updateCoins(isForcedUpdate: Boolean) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                coinsLiveData = pagedListBuilder(CoinsRepository.loadCoinsRepo(isForcedUpdate))
+            }
+            coinsMediatorLiveData.addSource(coinsLiveData) {
+                coinsMediatorLiveData.value = it
+            }
+        }
     }
 
     // Функция поиска по имени
-    fun searchBy(newText: String) = pagedListBuilder(SearchAndSortRepository.searchByRepo(newText))
+    fun searchBy(newText: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                searchCoinsLiveData =
+                    pagedListBuilder(SearchAndSortRepository.searchByRepo(newText))
+            }
+            coinsMediatorLiveData.addSource(searchCoinsLiveData) {
+                coinsMediatorLiveData.value = it
+            }
+        }
+    }
 
     // Функция сортировки
-    fun sortBy(value: Int) = pagedListBuilder(SearchAndSortRepository.sortByRepo(value))
+    fun sortBy(value: Int) {
+        sortCoinsLiveData = pagedListBuilder(SearchAndSortRepository.sortByRepo(value))
+        coinsMediatorLiveData.addSource(sortCoinsLiveData) {
+            coinsMediatorLiveData.value = it
+        }
+    }
 
     // Запись или удаление из ибранного
-    fun setFavorites(position: String, value: Int) = pagedListBuilder(CoinsRepository.setFavoritesRepo(position, value))
+    fun setFavorites(position: String, value: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            CoinsRepository.setFavoritesRepo(position, value)
+        }
+    }
 
     // Обновляем данные в DataSource и строим PagedList
-    private fun pagedListBuilder(query: DataSource.Factory<Int, MinimalCoinsModel>): LiveData<PagedList<MinimalCoinsModel>>{
+    private fun pagedListBuilder(query: DataSource.Factory<Int, MinimalCoinsModel>): LiveData<PagedList<MinimalCoinsModel>> {
         // Задаём параметры PagedList
         val pagedListConfig = PagedList.Config.Builder()
             .setEnablePlaceholders(true)

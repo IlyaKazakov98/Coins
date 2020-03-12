@@ -13,7 +13,7 @@ import com.readyfo.coins.model.MinimalCoinsModel
 abstract class CoinsDao {
     // CoinsRepository:
     @Transaction
-    open suspend fun insertCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long){
+    open suspend fun insertCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long) {
         insertCoins(listCoinsModel)
         insertFavorites()
         insertLastCoinsUpdate(lastTimeUpdate)
@@ -29,10 +29,11 @@ abstract class CoinsDao {
     abstract suspend fun insertLastCoinsUpdate(lastTimeUpdate: Long)
 
     @Transaction
-    open suspend fun updateCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long){
+    open suspend fun updateCoinsTrans(listCoinsModel: List<CoinsModel>, lastTimeUpdate: Long) {
         updateCoins(listCoinsModel)
         insertLastCoinsUpdate(lastTimeUpdate)
     }
+
     @Update
     abstract suspend fun updateCoins(listCoinsModel: List<CoinsModel>)
 
@@ -45,10 +46,10 @@ abstract class CoinsDao {
     @Query("SELECT last_time_coins_update FROM last_update_table ORDER BY id LIMIT 1")
     abstract fun checkLastCoinsUpdate(): Long
 
-    @Query("UPDATE favorites_table SET favorites_id = :value WHERE fav_symbol = :symbolCoin" )
+    @Query("UPDATE favorites_table SET favorites_id = :value WHERE fav_symbol = :symbolCoin")
     abstract suspend fun setFavorites(symbolCoin: String, value: Int)
 
-    @Query("SELECT favorites_id FROM favorites_table WHERE fav_symbol = :symbolCoin" )
+    @Query("SELECT favorites_id FROM favorites_table WHERE fav_symbol = :symbolCoin")
     abstract suspend fun getFavorites(symbolCoin: String): Int
 
     // GlobalMetricsRepository:
@@ -87,10 +88,10 @@ abstract class CoinsDao {
     @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY percent_change_1h DESC")
     abstract fun sortByPercent(): DataSource.Factory<Int, MinimalCoinsModel>
 
-        // Тестовые запросы для логов
-        @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY favorites_table.favorites_id DESC, price DESC")
-        abstract suspend fun testSortBy(): List<MinimalCoinsModel>
+    // Тестовые запросы для логов
+    @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY favorites_table.favorites_id DESC, price DESC")
+    abstract suspend fun testSortBy(): List<MinimalCoinsModel>
 
-        @Query("SELECT * FROM coins_table  WHERE name LIKE '%' || :newText || '%'")
-        abstract suspend fun testSearchBy(newText: String): List<CoinsModel>
+    @Query("SELECT * FROM coins_table  WHERE name LIKE '%' || :newText || '%'")
+    abstract suspend fun testSearchBy(newText: String): List<CoinsModel>
 }
