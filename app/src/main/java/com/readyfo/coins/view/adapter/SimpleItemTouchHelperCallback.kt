@@ -1,4 +1,4 @@
-package com.readyfo.coins.adapter
+package com.readyfo.coins.view.adapter
 
 import android.content.Context
 import androidx.recyclerview.widget.ItemTouchHelper

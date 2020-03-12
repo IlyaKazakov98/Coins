@@ -5,7 +5,7 @@
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".view.fragment.viewpagerfragmens.ViewPagerFragment">
+        tools:context=".view.fragment.viewpagerfragments.ViewPagerFragment">
 
     <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"

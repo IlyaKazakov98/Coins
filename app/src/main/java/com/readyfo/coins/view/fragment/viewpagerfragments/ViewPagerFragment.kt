@@ -1,9 +1,7 @@
-package com.readyfo.coins.view.fragment.viewpagerfragmens
+package com.readyfo.coins.view.fragment.viewpagerfragments
 
 
-import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +13,7 @@ import androidx.viewpager.widget.ViewPager
 import com.readyfo.coins.R
 import kotlinx.android.synthetic.main.fragment_view_pager.*
 
-class ViewPagerFragment(val context: Activity, private val coinId: Int, private val favoritesId: Int) : Fragment() {
+class ViewPagerFragment(private val coinId: Int, private val favoritesId: Int) : Fragment() {
     private lateinit var pagerAdapter: PagerAdapter
     private lateinit var viewPager: ViewPager
 
@@ -43,7 +41,7 @@ class ViewPagerFragment(val context: Activity, private val coinId: Int, private 
         fm: FragmentManager,
         private val coinId: Int,
         private val favoritesId: Int
-    ) : FragmentStatePagerAdapter(fm) {
+    ) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int = 2
 
         override fun getPageTitle(position: Int): CharSequence? {

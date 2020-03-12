@@ -1,10 +1,9 @@
-package com.readyfo.coins.view.fragment.viewpagerfragmens
+package com.readyfo.coins.view.fragment.viewpagerfragments
 
 
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +12,7 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateViewModelFactory
+import com.readyfo.coins.App
 import com.readyfo.coins.Common
 
 import com.readyfo.coins.R
@@ -24,7 +24,7 @@ import kotlinx.android.synthetic.main.fragment_detailed_info.*
 class DetailedInfoFragment : Fragment() {
     private var args: Bundle? = null
     private val detailedInfoViewModel: DetailedInfoViewModel by viewModels(
-        factoryProducer = {SavedStateViewModelFactory(this)}
+        factoryProducer = {SavedStateViewModelFactory(App(), this)}
     )
 
     // Создаётся экземпляр фрагмента
