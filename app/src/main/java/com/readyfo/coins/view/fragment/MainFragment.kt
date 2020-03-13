@@ -4,7 +4,6 @@ package com.readyfo.coins.view.fragment
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -54,8 +53,11 @@ class MainFragment : Fragment() {
         // Подписываемся на изменение данных
         coinsViewModel.coins.observe(viewLifecycleOwner, Observer {
             // Обновляем UI(передаём PagedList в адаптер)
-            adapter.submitList(it)
-            adapter.notifyDataSetChanged()
+            adapter.apply {
+                submitList(it)
+                notifyDataSetChanged()
+            }
+            coinRecyclerView.scrollToPosition(0)
         })
 
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
@@ -70,7 +72,6 @@ class MainFragment : Fragment() {
     // Привязываем меню к фрагменту
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(layout, menu)
-        initSearchView(menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -105,26 +106,6 @@ class MainFragment : Fragment() {
                 }
             }
         }
-    }
-
-    // Обрабатываем действия пользователя в поле поиска
-    private fun initSearchView(menu: Menu) {
-        val searchViewMenuItem = menu.findItem(R.id.app_bar_search)
-        val searchView = searchViewMenuItem.actionView as SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null || query != "")
-                    query?.let { coinsViewModel.searchBy(it) }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null || newText != "")
-                    newText?.let { coinsViewModel.searchBy(it) }
-                return true
-            }
-        })
     }
 
     // Обновляем данные по просьбе пользователя

@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 class CoinsViewModel : ViewModel() {
     private lateinit var coinsMediatorLiveData: MediatorLiveData<PagedList<MinimalCoinsModel>>
     private lateinit var coinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
-    private lateinit var searchCoinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
     private lateinit var sortCoinsLiveData: LiveData<PagedList<MinimalCoinsModel>>
     private val boundaryCallBack = CoinsBoundaryCallBack()
 
@@ -39,19 +38,6 @@ class CoinsViewModel : ViewModel() {
                 coinsLiveData = pagedListBuilder(CoinsRepository.loadCoinsRepo(isForcedUpdate))
             }
             coinsMediatorLiveData.addSource(coinsLiveData, Observer {
-                coinsMediatorLiveData.value = it
-            })
-        }
-    }
-
-    // Функция поиска по имени
-    fun searchBy(newText: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                searchCoinsLiveData =
-                    pagedListBuilder(SearchAndSortRepository.searchByRepo(newText))
-            }
-            coinsMediatorLiveData.addSource(searchCoinsLiveData, Observer {
                 coinsMediatorLiveData.value = it
             })
         }

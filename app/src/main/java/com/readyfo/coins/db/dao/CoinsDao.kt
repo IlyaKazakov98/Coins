@@ -79,19 +79,9 @@ abstract class CoinsDao {
     abstract fun loadFavoritesDetailed(coinId: Int): LiveData<FavoritesModel>
 
     // SearchAndSortRepository
-    @Query("SELECT * FROM coins_table WHERE name LIKE '%' || :newText || '%'")
-    abstract fun searchBy(newText: String): DataSource.Factory<Int, MinimalCoinsModel>
-
     @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY price DESC")
     abstract fun sortByPrice(): DataSource.Factory<Int, MinimalCoinsModel>
 
     @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY percent_change_1h DESC")
     abstract fun sortByPercent(): DataSource.Factory<Int, MinimalCoinsModel>
-
-    // Тестовые запросы для логов
-    @Query("SELECT * FROM coins_table LEFT JOIN favorites_table ON favorites_table.fav_coin_id = coins_table.coin_id ORDER BY favorites_table.favorites_id DESC, price DESC")
-    abstract suspend fun testSortBy(): List<MinimalCoinsModel>
-
-    @Query("SELECT * FROM coins_table  WHERE name LIKE '%' || :newText || '%'")
-    abstract suspend fun testSearchBy(newText: String): List<CoinsModel>
 }
