@@ -6,9 +6,13 @@ import com.readyfo.coins.App
 import com.readyfo.coins.Common.CONVERT_VALET
 import com.readyfo.coins.Common.ONE_HOUR_IN_SECOND
 import com.readyfo.coins.Common.TIME_IS_NOW
+import com.readyfo.coins.TAG
 import com.readyfo.coins.http.Api
 import com.readyfo.coins.model.GlobalMetricsModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object GlobalMetricsRepository {
     private var updateBool = true
@@ -26,8 +30,6 @@ object GlobalMetricsRepository {
             if (checkLastUpdateBool)
                 onRefreshGlobalMetrics()
 
-            Log.d("CoinsLog", "lastTimeUpdate: ${coinsDao.checkLastGMUpdate()}")
-
             coinsDao.updateLastGMUpdate(TIME_IS_NOW)
         }
         return coinsDao.loadGM()
@@ -39,27 +41,23 @@ object GlobalMetricsRepository {
             withContext(Dispatchers.Default) {
                 if (updateBool) {
                     coinsDao.updateGM(response.data)
-                    Log.d("CoinsLog", "UpdateGM")
-                }
-                else {
+                    Log.d(TAG, "UpdateGM")
+                } else {
                     val id = coinsDao.insertGM(response.data)
-                    Log.d("CoinsLog", "InsertGM, $id")
+                    Log.d(TAG, "InsertGM, $id")
                 }
             }
         } catch (e: Exception) {
-            Log.e("CoinsErrorLog", "ThrowableRefreshCoins: ${e.message}")
+            Log.e(TAG, "ThrowableRefreshCoins: ${e.message}")
         }
     }
 
     private fun checkLastUpdate(): Boolean {
         var localCheckLastUpdate = true
         val lastTimeUpdate: Long = coinsDao.checkLastGMUpdate()
-        Log.d("CoinsLog", "lastTimeUpdate: $lastTimeUpdate")
 
         if (TIME_IS_NOW - lastTimeUpdate <= ONE_HOUR_IN_SECOND)
             localCheckLastUpdate = false
-
-        Log.d("CoinsLog", "Разница: ${TIME_IS_NOW - lastTimeUpdate}")
 
         return localCheckLastUpdate
     }

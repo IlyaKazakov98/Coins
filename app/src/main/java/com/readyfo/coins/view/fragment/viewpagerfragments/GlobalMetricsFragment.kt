@@ -41,26 +41,31 @@ class GlobalMetricsFragment : Fragment() {
         })
     }
 
-    private fun refreshUI(globalMetricsModel: GlobalMetricsModel){
+    private fun refreshUI(globalMetricsModel: GlobalMetricsModel) {
         cryptocurrenciesGM.text = globalMetricsModel.active_cryptocurrencies.toString()
         marketsGM.text = globalMetricsModel.active_market_pairs.toString()
         marketCapGM.text = "$ ${stringFormat(globalMetricsModel.quote.USD.total_market_cap)}"
-        volumeTwentyFourHourGM.text = "$ ${stringFormat(globalMetricsModel.quote.USD.total_volume_24h)}"
+        volumeTwentyFourHourGM.text =
+            "$ ${stringFormat(globalMetricsModel.quote.USD.total_volume_24h)}"
         btcDominanceGM.text = stringFormat(globalMetricsModel.btc_dominance)
         ethDominanceGM.text = stringFormat(globalMetricsModel.eth_dominance)
 
         Picasso.get()
-            .load(StringBuilder(Common.imageUrl)
-                .append("btc")
-                .append(".png")
-                .toString())
+            .load(
+                StringBuilder(Common.imageUrl)
+                    .append("btc")
+                    .append(".png")
+                    .toString()
+            )
             .into(coinIconBTCGM)
 
         Picasso.get()
-            .load(StringBuilder(Common.imageUrl)
-                .append("eth")
-                .append(".png")
-                .toString())
+            .load(
+                StringBuilder(Common.imageUrl)
+                    .append("eth")
+                    .append(".png")
+                    .toString()
+            )
             .into(coinIconETHGM)
     }
 

@@ -1,9 +1,6 @@
 package com.readyfo.coins.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -41,9 +38,9 @@ class CoinsViewModel : ViewModel() {
             withContext(Dispatchers.IO) {
                 coinsLiveData = pagedListBuilder(CoinsRepository.loadCoinsRepo(isForcedUpdate))
             }
-            coinsMediatorLiveData.addSource(coinsLiveData) {
+            coinsMediatorLiveData.addSource(coinsLiveData, Observer {
                 coinsMediatorLiveData.value = it
-            }
+            })
         }
     }
 
@@ -54,18 +51,18 @@ class CoinsViewModel : ViewModel() {
                 searchCoinsLiveData =
                     pagedListBuilder(SearchAndSortRepository.searchByRepo(newText))
             }
-            coinsMediatorLiveData.addSource(searchCoinsLiveData) {
+            coinsMediatorLiveData.addSource(searchCoinsLiveData, Observer {
                 coinsMediatorLiveData.value = it
-            }
+            })
         }
     }
 
     // Функция сортировки
     fun sortBy(value: Int) {
         sortCoinsLiveData = pagedListBuilder(SearchAndSortRepository.sortByRepo(value))
-        coinsMediatorLiveData.addSource(sortCoinsLiveData) {
+        coinsMediatorLiveData.addSource(sortCoinsLiveData, Observer {
             coinsMediatorLiveData.value = it
-        }
+        })
     }
 
     // Запись или удаление из ибранного

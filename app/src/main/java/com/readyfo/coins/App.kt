@@ -4,7 +4,9 @@ import android.app.Application
 import com.readyfo.coins.db.CoinsDatabase
 import com.readyfo.coins.http.Api
 
-class App : Application()  {
+const val TAG = "CoinsLog"
+
+class App : Application() {
     companion object {
         lateinit var instance: App
         lateinit var coinsDB: CoinsDatabase

@@ -1,6 +1,5 @@
 package com.readyfo.coins.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -27,8 +26,6 @@ class DetailedInfoViewModel(private val stateHandle: SavedStateHandle): ViewMode
 
     private fun loadDetailedInfo(): LiveData<CoinsModel>{
         val localCoinId = stateHandle.get<Int>(COIN_KEY)
-
-        Log.d("CoinsLog", "LoadDetailedInfo: $localCoinId")
 
         return DetailedInfoRepository.loadDetailedInfoRepo(localCoinId!!)
     }

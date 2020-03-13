@@ -13,20 +13,27 @@ import com.readyfo.coins.model.MinimalCoinsModel
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.coin_layout.view.*
 
-class CoinsAdapter(): PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsViewHolder>(DIFF_CALLBACK) {
+class CoinsAdapter() :
+    PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsViewHolder>(DIFF_CALLBACK) {
     override fun onBindViewHolder(holder: CoinsViewHolder, position: Int) =
         holder.bindTo(getItem(position))
 
-    // fun getItemAt(position: Int): CoinsModel = getItem(position)!!
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinsViewHolder =
-        CoinsViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.coin_layout, parent, false))
+        CoinsViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.coin_layout, parent, false)
+        )
 
-    companion object{
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MinimalCoinsModel>(){
-            override fun areItemsTheSame(oldItem: MinimalCoinsModel, newItem: MinimalCoinsModel): Boolean = oldItem.coin_id == newItem.coin_id
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MinimalCoinsModel>() {
+            override fun areItemsTheSame(
+                oldItem: MinimalCoinsModel,
+                newItem: MinimalCoinsModel
+            ): Boolean = oldItem.coin_id == newItem.coin_id
 
-            override fun areContentsTheSame(oldItem: MinimalCoinsModel, newItem: MinimalCoinsModel): Boolean = oldItem == newItem
+            override fun areContentsTheSame(
+                oldItem: MinimalCoinsModel,
+                newItem: MinimalCoinsModel
+            ): Boolean = oldItem == newItem
         }
     }
 
@@ -49,10 +56,13 @@ class CoinsAdapter(): PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsView
             this.minimalCoinsModel = minimalCoinsModel1
 
             // Обрабатываем нажатия на элемент RecyclerView и передаём данные о нём, по цепочке, в ViewPager
-            parentLayout.setOnClickListener{
+            parentLayout.setOnClickListener {
                 if (minimalCoinsModel1 != null) {
                     val listener = parentLayout.context as ItemClickListener
-                    listener.onClickItem(minimalCoinsModel1.coin_id!!, minimalCoinsModel?.favorites?.favorites_id!!)
+                    listener.onClickItem(
+                        minimalCoinsModel1.coin_id!!,
+                        minimalCoinsModel?.favorites?.favorites_id!!
+                    )
                 }
             }
 
@@ -62,19 +72,21 @@ class CoinsAdapter(): PagedListAdapter<MinimalCoinsModel, CoinsAdapter.CoinsView
             coinPrice.text = stringFormat(minimalCoinsModel1?.quote?.USD?.price)
             oneHourChange.text = stringFormat(minimalCoinsModel1?.quote?.USD?.percent_change_1h)
             favoritesIcon.setImageResource(
-                if (minimalCoinsModel?.favorites?.favorites_id == 0 || minimalCoinsModel?.favorites?.favorites_id == null){
+                if (minimalCoinsModel?.favorites?.favorites_id == 0 || minimalCoinsModel?.favorites?.favorites_id == null) {
                     R.drawable.ic_favorites_false_24dp
-                } else{
+                } else {
                     R.drawable.ic_favorites_true_24dp
                 }
             )
 
 
             Picasso.get()
-                .load(StringBuilder(Common.imageUrl)
-                    .append(minimalCoinsModel1?.symbol?.toLowerCase())
-                    .append(".png")
-                    .toString())
+                .load(
+                    StringBuilder(Common.imageUrl)
+                        .append(minimalCoinsModel1?.symbol?.toLowerCase())
+                        .append(".png")
+                        .toString()
+                )
                 .into(coinsIcon)
 
             oneHourChange.setTextColor(

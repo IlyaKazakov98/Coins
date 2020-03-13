@@ -85,8 +85,6 @@ class DetailedInfoFragment : Fragment() {
 
         detailedMarketCap.text = stringFormat(coinModel.quote?.USD?.market_cap)
 
-
-
         Picasso.get()
             .load(
                 StringBuilder(Common.imageUrl)
